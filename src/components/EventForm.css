@@ -1,0 +1,32 @@
+.event-form {
+    background-color: #fff;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .event-form label {
+    display: block;
+    margin-top: 10px;
+    font-weight: bold;
+  }
+  
+  .event-form input {
+    margin-top: 10px;
+    box-sizing: border-box;
+  }
+
+  .event-form textarea{
+    margin-top: 10px;
+    height: 150px;
+    resize: vertical;
+    box-sizing: border-box;
+  }
+  
+  .event-form button {
+    display: inline-block;
+    margin-top: 15px;
+    width: 100%;
+  }
+  
