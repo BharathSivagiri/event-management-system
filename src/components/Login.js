@@ -5,48 +5,54 @@ import { useNavigate } from 'react-router-dom';
 import { API_ENDPOINTS } from '../constants/apiLinks';
 
 const Login = ({ setIsAuthenticated }) => {
-  const [credentials, setCredentials] = useState({ customName: '', password: '' });
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const navigate = useNavigate();
 
-  const handleLogin = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    
     try {
-      const response = await axios.post(API_ENDPOINTS.LOGIN, credentials);
-      localStorage.setItem('token', response.data.token);
-      localStorage.setItem('userId', response.data.userId); 
+      const { data } = await axios.post(API_ENDPOINTS.LOGIN, {
+        customName: username,
+        password: password
+      });
+      
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('userId', data.userId);
       setIsAuthenticated(true);
       navigate('/events');
-    } catch (error) {
+    } catch {
       alert('Login failed');
     }
   };
-  
+
   return (
     <Container maxWidth="sm">
-      <Paper elevation={3} style={{ padding: '2rem', marginTop: '2rem' }}>
+      <Paper elevation={3} sx={{ p: 4, mt: 4 }}>
         <Typography variant="h4" gutterBottom>Login</Typography>
-        <form onSubmit={handleLogin}>
+        <form onSubmit={handleSubmit}>
           <TextField
             fullWidth
             label="Username"
             margin="normal"
-            value={credentials.customName}
-            onChange={(e) => setCredentials({...credentials, customName: e.target.value})}
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
           />
           <TextField
             fullWidth
             label="Password"
             type="password"
             margin="normal"
-            value={credentials.password}
-            onChange={(e) => setCredentials({...credentials, password: e.target.value})}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
           />
           <Button 
             variant="contained" 
             color="primary" 
             type="submit"
             fullWidth 
-            style={{ marginTop: '1rem' }}
+            sx={{ mt: 2 }}
           >
             Login
           </Button>

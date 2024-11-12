@@ -1,47 +1,32 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import {
-  Container, Paper, Typography, TextField, Box, Card,
-  CardContent, Button, IconButton, Stack, Dialog, DialogTitle,
-  DialogContent, DialogActions
-} from '@mui/material';
-import { Delete, Edit, Close } from '@mui/icons-material';
+import React, { useState, useEffect } from 'react';
+import { Container, Paper, Typography, TextField, Box, Card, CardContent, Button, Stack } from '@mui/material';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { API_ENDPOINTS } from '../constants/apiLinks';
 import { MESSAGES } from '../constants/messages';
 import { buildUrlWithParams } from '../utils/queryUtils';
+import { useDebounce } from '../hooks/useDebounce';
+import { EventDialog } from './EventDialog';
 
 const EventList = () => {
   const [events, setEvents] = useState([]);
-  const [searchKeyword, setSearchKeyword] = useState('');
-  const [dateRange, setDateRange] = useState({
-    dateA: '',
-    dateB: ''
-  });
-  const [currentUser, setCurrentUser] = useState(null);
+  const [filters, setFilters] = useState({ searchKeyword: '', dateA: '', dateB: '' });
   const [selectedEvent, setSelectedEvent] = useState(null);
-  const [openDialog, setOpenDialog] = useState(false);
+  const isAdmin = localStorage.getItem('userId') === '1';
+  const navigate = useNavigate();
+  const debouncedFilters = useDebounce(filters, 500);
 
-  const fetchCurrentUser = useCallback(async () => {
-
-    const userId = localStorage.getItem('userId');
-    setCurrentUser({ userId });
-  }, []);
-
-  const fetchEvents = useCallback(async () => {
+  const fetchEvents = async () => {
     try {
-      const token = localStorage.getItem('token');
       const params = new URLSearchParams();
-      
-      if (searchKeyword) params.append('keyword', searchKeyword);
-      if (dateRange.dateA) params.append('dateA', dateRange.dateA.replace(/-/g, ''));
-      if (dateRange.dateB) params.append('dateB', dateRange.dateB.replace(/-/g, ''));
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value) params.append(key === 'searchKeyword' ? 'keyword' : key, 
+          key.includes('date') ? value.replace(/-/g, '') : value);
+      });
 
-      const viewUrl = buildUrlWithParams(API_ENDPOINTS.VIEW_EVENTS, params);
-  
-      const response = await axios.get(viewUrl, {
+      const response = await axios.get(buildUrlWithParams(API_ENDPOINTS.VIEW_EVENTS, params), {
         headers: {
-          'Authorization': `${token}`,
+          'Authorization': localStorage.getItem('token'),
           'userId': localStorage.getItem('userId')
         }
       });
@@ -49,56 +34,38 @@ const EventList = () => {
     } catch (error) {
       console.error(MESSAGES.FETCH_ERROR, error);
     }
-  }, [searchKeyword, dateRange]);
+  };
 
   useEffect(() => {
-    fetchCurrentUser();
     fetchEvents();
-  }, [fetchEvents, fetchCurrentUser]);
+  }, [debouncedFilters]);
 
   const handleDelete = async (eventId) => {
     try {
-      const token = localStorage.getItem('token');
-      const id = eventId;
-      const delUrl = (API_ENDPOINTS.DELETE_EVENT.replace(':eventId',id))
-
-      await axios.delete(delUrl, {
+      await axios.delete(API_ENDPOINTS.DELETE_EVENT.replace(':eventId', eventId), {
         headers: {
-          Authorization: token,
+          Authorization: localStorage.getItem('token'),
           userId: localStorage.getItem('userId')
         }
       });
       fetchEvents();
+      setSelectedEvent(null);
     } catch (error) {
       console.error(MESSAGES.DELETE_ERROR, error);
     }
   };
 
-  const handleEventClick = (event) => {
-    setSelectedEvent(event);
-    setOpenDialog(true);
+  const handleFilterChange = (field, value) => {
+    setFilters(prev => ({ ...prev, [field]: value }));
   };
-
-  const handleCloseDialog = () => {
-    setOpenDialog(false);
-    setSelectedEvent(null);
-  };
-
-  const isAdmin = currentUser?.userId === '1';
-  const navigate = useNavigate();
 
   return (
     <Container>
       <Paper elevation={3} sx={{ p: 4, mt: 4 }}>
-
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
           <Typography variant="h4">Events</Typography>
           {isAdmin && (
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={() => navigate('/create-event')}
-            >
+            <Button variant="contained" onClick={() => navigate('/create-event')}>
               Create Event
             </Button>
           )}
@@ -108,24 +75,24 @@ const EventList = () => {
           <TextField
             fullWidth
             label="Search Events"
-            value={searchKeyword}
-            onChange={(e) => setSearchKeyword(e.target.value)}
+            value={filters.searchKeyword}
+            onChange={(e) => handleFilterChange('searchKeyword', e.target.value)}
           />
           <TextField
             fullWidth
             type="date"
             label="From Date"
+            value={filters.dateA}
+            onChange={(e) => handleFilterChange('dateA', e.target.value)}
             sx={{ '& .MuiInputLabel-root': { transform: 'translate(14px, -9px) scale(0.75)' } }}
-            value={dateRange.dateA}
-            onChange={(e) => setDateRange({...dateRange, dateA: e.target.value})}
           />
           <TextField
             fullWidth
             type="date"
             label="To Date"
+            value={filters.dateB}
+            onChange={(e) => handleFilterChange('dateB', e.target.value)}
             sx={{ '& .MuiInputLabel-root': { transform: 'translate(14px, -9px) scale(0.75)' } }}
-            value={dateRange.dateB}
-            onChange={(e) => setDateRange({...dateRange, dateB: e.target.value})}
           />
         </Stack>
 
@@ -133,7 +100,7 @@ const EventList = () => {
           {events.map((event) => (
             <Card 
               key={event.eventId} 
-              onClick={() => handleEventClick(event)}
+              onClick={() => setSelectedEvent(event)}
               sx={{ cursor: 'pointer', '&:hover': { bgcolor: 'action.hover' } }}
             >
               <CardContent>
@@ -144,53 +111,12 @@ const EventList = () => {
           ))}
         </Box>
 
-        <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
-          <DialogTitle>
-            <Box display="flex" justifyContent="space-between" alignItems="center">
-              <Typography variant="h6">{selectedEvent?.eventName}</Typography>
-              <IconButton onClick={handleCloseDialog}>
-                <Close />
-              </IconButton>
-            </Box>
-          </DialogTitle>
-          <DialogContent dividers>
-            {selectedEvent && (
-              <>
-                <Typography color="text.secondary" paragraph>
-                  {selectedEvent.eventDescription}
-                </Typography>
-                <Typography paragraph>
-                  Location: {selectedEvent.eventLocation}
-                </Typography>
-                <Typography paragraph>
-                  Date: {selectedEvent.eventDate}
-                </Typography>
-                <Typography paragraph>
-                  Capacity: {selectedEvent.eventCapacity}
-                </Typography>
-                <Typography paragraph>
-                  Fee: Rs.{selectedEvent.eventFee}
-                </Typography>
-              </>
-            )}
-          </DialogContent>
-          <DialogActions>
-            {isAdmin ? (
-              <>
-                <IconButton onClick={() => handleDelete(selectedEvent.eventId)}>
-                  <Delete />
-                </IconButton>
-                <IconButton>
-                  <Edit />
-                </IconButton>
-              </>
-            ) : (
-              <Button variant="contained" color="primary">
-                Register
-              </Button>
-            )}
-          </DialogActions>
-        </Dialog>
+        <EventDialog 
+          event={selectedEvent}
+          isAdmin={isAdmin}
+          onClose={() => setSelectedEvent(null)}
+          onDelete={handleDelete}
+        />
       </Paper>
     </Container>
   );

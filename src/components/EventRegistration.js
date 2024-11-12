@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Container, Paper, TextField, Button, Typography } from '@mui/material';
 import axios from 'axios';
+import { API_ENDPOINTS } from '../constants/apiLinks';
 
 const EventRegistration = ({ eventId }) => {
   const [registrationData, setRegistrationData] = useState({
@@ -18,7 +19,7 @@ const EventRegistration = ({ eventId }) => {
     e.preventDefault();
     try {
       const token = localStorage.getItem('token');
-      await axios.post('http://localhost:8080/ems/events/registration', registrationData, {
+      await axios.post(API_ENDPOINTS.REG_FOR_EVENT, registrationData, {
         headers: {
           Authorization: token,
           userId: registrationData.userId
