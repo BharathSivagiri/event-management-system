@@ -4,7 +4,7 @@ import Login from './components/Login';
 import EventList from './components/EventList';
 import CreateEvent from './components/CreateEvent';
 import EventRegistration from './components/EventRegistration';
-import { AppBar, Toolbar, Typography, Button } from '@mui/material';
+import NavigationBar from './components/NavigationBar';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -16,21 +16,7 @@ function App() {
 
   return (
     <Router>
-      <AppBar position="static">
-        <Toolbar>
-          <Typography variant="h6" style={{ flexGrow: 1 }}>
-            Event Management System
-          </Typography>
-          {isAuthenticated && (
-            <>
-              <Button color="inherit" href="/events">Events</Button>
-              <Button color="inherit" href="/create-event">Create Event</Button>
-              <Button color="inherit" onClick={handleLogout}>Logout</Button>
-            </>
-          )}
-        </Toolbar>
-      </AppBar>
-
+      <NavigationBar isAuthenticated={isAuthenticated} handleLogout={handleLogout} />
       <Routes>
         <Route 
           path="/" 
@@ -49,7 +35,7 @@ function App() {
         <Route 
           path="/create-event" 
           element={isAuthenticated ? 
-            <CreateEvent /> : 
+            <CreateEvent setIsAuthenticated={setIsAuthenticated}/> : 
             <Navigate to="/" />
           } 
         />

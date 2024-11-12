@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { TextField, Button, Container, Paper, Typography } from '@mui/material';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { API_ENDPOINTS } from '../constants/apiLinks';
 
 const Login = ({ setIsAuthenticated }) => {
   const [credentials, setCredentials] = useState({ customName: '', password: '' });
@@ -10,15 +11,16 @@ const Login = ({ setIsAuthenticated }) => {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:8080/ems/api/auth', credentials);
+      const response = await axios.post(API_ENDPOINTS.LOGIN, credentials);
       localStorage.setItem('token', response.data.token);
+      localStorage.setItem('userId', response.data.userId); 
       setIsAuthenticated(true);
       navigate('/events');
     } catch (error) {
       alert('Login failed');
     }
   };
-
+  
   return (
     <Container maxWidth="sm">
       <Paper elevation={3} style={{ padding: '2rem', marginTop: '2rem' }}>
