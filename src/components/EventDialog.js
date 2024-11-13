@@ -1,9 +1,17 @@
 import React from 'react';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Typography, Box, IconButton, Button } from '@mui/material';
 import { Close, Delete, Edit } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
 
 export const EventDialog = ({ event, isAdmin, onClose, onDelete }) => {
+  const navigate = useNavigate();
+  
   if (!event) return null;
+
+  const handleRegisterClick = () => {
+    navigate(`/event-registration/${event.eventId}`);
+    onClose();
+  };
 
   return (
     <Dialog open={!!event} onClose={onClose} maxWidth="sm" fullWidth>
@@ -27,7 +35,13 @@ export const EventDialog = ({ event, isAdmin, onClose, onDelete }) => {
             <IconButton><Edit /></IconButton>
           </>
         ) : (
-          <Button variant="contained" color="primary">Register</Button>
+          <Button 
+            variant="contained" 
+            color="primary"
+            onClick={handleRegisterClick}
+          >
+            Register
+          </Button>
         )}
       </DialogActions>
     </Dialog>

@@ -13,7 +13,7 @@ const NavigationBar = ({ isAuthenticated, handleLogout }) => {
         </Typography>
         {isAuthenticated && (
           <>
-            <Button color="inherit" onClick={() => navigate('/events')}>Events</Button>
+            <Button color="inherit" onClick={() => navigate('/dashboard')}>Home</Button>
             <Button color="inherit" onClick={handleLogout}>Logout</Button>
           </>
         )}

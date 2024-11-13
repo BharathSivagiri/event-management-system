@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Paper, Typography, TextField, Box, Card, CardContent, Button, Stack } from '@mui/material';
+import { Container, Paper, Typography, TextField, Box, Card, CardContent, Button, Stack, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { API_ENDPOINTS } from '../constants/apiLinks';
@@ -10,7 +10,12 @@ import { EventDialog } from './EventDialog';
 
 const EventList = () => {
   const [events, setEvents] = useState([]);
-  const [filters, setFilters] = useState({ searchKeyword: '', dateA: '', dateB: '' });
+  const [filters, setFilters] = useState({ 
+    searchKeyword: '', 
+    dateA: '', 
+    dateB: '', 
+    status: '' 
+  });
   const [selectedEvent, setSelectedEvent] = useState(null);
   const isAdmin = localStorage.getItem('userId') === '1';
   const navigate = useNavigate();
@@ -20,8 +25,15 @@ const EventList = () => {
     try {
       const params = new URLSearchParams();
       Object.entries(filters).forEach(([key, value]) => {
-        if (value) params.append(key === 'searchKeyword' ? 'keyword' : key, 
-          key.includes('date') ? value.replace(/-/g, '') : value);
+        if (value) {
+          if (key === 'searchKeyword') {
+            params.append('keyword', value);
+          } else if (key.includes('date')) {
+            params.append(key, value.replace(/-/g, ''));
+          } else if (key === 'status' && isAdmin) {
+            params.append('status', value);
+          }
+        }
       });
 
       const response = await axios.get(buildUrlWithParams(API_ENDPOINTS.VIEW_EVENTS, params), {
@@ -94,6 +106,20 @@ const EventList = () => {
             onChange={(e) => handleFilterChange('dateB', e.target.value)}
             sx={{ '& .MuiInputLabel-root': { transform: 'translate(14px, -9px) scale(0.75)' } }}
           />
+          {isAdmin && (
+            <FormControl fullWidth>
+              <InputLabel>Status</InputLabel>
+              <Select
+                value={filters.status}
+                label="Status"
+                onChange={(e) => handleFilterChange('status', e.target.value)}
+              >
+                <MenuItem value="">All</MenuItem>
+                <MenuItem value="active">Active</MenuItem>
+                <MenuItem value="inactive">Inactive</MenuItem>
+              </Select>
+            </FormControl>
+          )}
         </Stack>
 
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3 }}>
@@ -121,5 +147,4 @@ const EventList = () => {
     </Container>
   );
 };
-
 export default EventList;

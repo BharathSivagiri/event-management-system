@@ -21,7 +21,7 @@ const Login = ({ setIsAuthenticated }) => {
       localStorage.setItem('token', data.token);
       localStorage.setItem('userId', data.userId);
       setIsAuthenticated(true);
-      navigate('/events');
+      navigate('/dashboard');
     } catch {
       alert('Login failed');
     }

@@ -5,6 +5,7 @@ import EventList from './components/EventList';
 import CreateEvent from './components/CreateEvent';
 import EventRegistration from './components/EventRegistration';
 import NavigationBar from './components/NavigationBar';
+import Dashboard from './components/Dashboard';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -22,7 +23,14 @@ function App() {
           path="/" 
           element={!isAuthenticated ? 
             <Login setIsAuthenticated={setIsAuthenticated} /> : 
-            <Navigate to="/events" />
+            <Navigate to="/dashboard" />
+          } 
+        />
+        <Route 
+          path="/dashboard" 
+          element={isAuthenticated ? 
+            <Dashboard /> : 
+            <Navigate to="/" />
           } 
         />
         <Route 
@@ -40,7 +48,7 @@ function App() {
           } 
         />
         <Route 
-          path="/register/:eventId" 
+          path="/event-registration/:eventId" 
           element={isAuthenticated ? 
             <EventRegistration /> : 
             <Navigate to="/" />

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Container, Paper, TextField, Button, Typography } from '@mui/material';
+import { Container, Paper, TextField, Button, Typography, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
 import axios from 'axios';
 import { API_ENDPOINTS } from '../constants/apiLinks';
 
@@ -7,10 +7,10 @@ const EventRegistration = ({ eventId }) => {
   const [registrationData, setRegistrationData] = useState({
     eventId: eventId,
     amountPaid: '',
-    paymentMode: 'upi',
+    paymentMode: '',
     accountNumber: '',
-    transactionType: 'debit',
-    paymentStatus: 'paid',
+    transactionType: '',
+    paymentStatus: '',
     createdBy: '',
     userId: ''
   });
@@ -19,10 +19,17 @@ const EventRegistration = ({ eventId }) => {
     e.preventDefault();
     try {
       const token = localStorage.getItem('token');
-      await axios.post(API_ENDPOINTS.REG_FOR_EVENT, registrationData, {
+      const userId = localStorage.getItem('userId');
+      
+      const submissionData = {
+        ...registrationData,
+        userId: userId 
+      };
+
+      await axios.post(API_ENDPOINTS.REG_FOR_EVENT, submissionData, {
         headers: {
           Authorization: token,
-          userId: registrationData.userId
+          userId: userId
         }
       });
       alert('Registration successful');
@@ -39,11 +46,49 @@ const EventRegistration = ({ eventId }) => {
           <TextField
             fullWidth
             label="Amount"
-            type="number"
             margin="normal"
             value={registrationData.amountPaid}
             onChange={(e) => setRegistrationData({...registrationData, amountPaid: e.target.value})}
           />
+          
+          <FormControl fullWidth margin="normal">
+            <InputLabel>Payment Mode</InputLabel>
+            <Select
+              value={registrationData.paymentMode}
+              label="Payment Mode"
+              onChange={(e) => setRegistrationData({...registrationData, paymentMode: e.target.value})}
+            >
+              <MenuItem value="upi">UPI</MenuItem>
+              <MenuItem value="creditcard">Credit Card</MenuItem>
+              <MenuItem value="debitcard">Debit Card</MenuItem>
+            </Select>
+          </FormControl>
+
+          <FormControl fullWidth margin="normal">
+            <InputLabel>Transaction Type</InputLabel>
+            <Select
+              value={registrationData.transactionType}
+              label="Transaction Type"
+              onChange={(e) => setRegistrationData({...registrationData, transactionType: e.target.value})}
+            >
+              <MenuItem value="credit">Credit</MenuItem>
+              <MenuItem value="debit">Debit</MenuItem>
+            </Select>
+          </FormControl>
+
+          <FormControl fullWidth margin="normal">
+            <InputLabel>Payment Status</InputLabel>
+            <Select
+              value={registrationData.paymentStatus}
+              label="Payment Status"
+              onChange={(e) => setRegistrationData({...registrationData, paymentStatus: e.target.value})}
+            >
+              <MenuItem value="paid">Paid</MenuItem>
+              <MenuItem value="notpaid">Not Paid</MenuItem>
+              <MenuItem value="paycancelled">Payment Cancelled</MenuItem>
+            </Select>
+          </FormControl>
+
           <TextField
             fullWidth
             label="Account Number"
