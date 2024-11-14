@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Container, Paper, TextField, Button, Typography } from '@mui/material';
+import { Container, Paper, TextField, Button, Typography, Alert } from '@mui/material';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { API_ENDPOINTS } from '../constants/apiLinks';
@@ -17,6 +17,7 @@ const CreateEvent = () => {
   };
 
   const [eventData, setEventData] = useState(initialState);
+  const [showSuccess, setShowSuccess] = useState(false);
   const navigate = useNavigate();
 
   const formatDate = (date) => date.replace(/-/g, '');
@@ -38,7 +39,11 @@ const CreateEvent = () => {
           'userId': localStorage.getItem('userId')
         }
       });
-      navigate('/events');
+      setShowSuccess(true);
+      setTimeout(() => {
+        setShowSuccess(false);
+        navigate('/events');
+      }, 2000);
     } catch (error) {
       console.error('Error creating event:', error);
     }
@@ -63,6 +68,14 @@ const CreateEvent = () => {
 
   return (
     <Container maxWidth="sm">
+      {showSuccess && (
+        <Alert 
+          severity="success" 
+          sx={{ mt: 2 }}
+        >
+          Event created successfully!
+        </Alert>
+      )}
       <Paper elevation={3} style={{ padding: '2rem', marginTop: '2rem' }}>
         <Typography variant="h4" gutterBottom>Create Event</Typography>
         <form onSubmit={handleSubmit}>
