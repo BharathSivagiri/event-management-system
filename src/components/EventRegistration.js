@@ -3,37 +3,43 @@ import { Container, Paper, TextField, Button, Typography, Select, MenuItem, Form
 import axios from 'axios';
 import { API_ENDPOINTS } from '../constants/apiLinks';
 
-const EventRegistration = ({ eventId }) => {
+const EventRegistration = ({ eventId, eventFee }) => {
   const [registrationData, setRegistrationData] = useState({
-    eventId: eventId,
-    amountPaid: '',
     paymentMode: '',
     accountNumber: '',
     transactionType: '',
     paymentStatus: '',
-    createdBy: '',
-    userId: ''
+    createdBy: ''
   });
+
+  // Validation moved after useState to prevent hooks error
+  if (!eventId || !eventFee) {
+    return <Typography>Missing required event information</Typography>;
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    try {
-      const token = localStorage.getItem('token');
-      const userId = localStorage.getItem('userId');
-      
-      const submissionData = {
-        ...registrationData,
-        userId: userId 
-      };
+    const token = localStorage.getItem('token');
+    const userId = localStorage.getItem('userId');
+   
+    const submissionData = {
+      eventId: parseInt(eventId),
+      amountPaid: parseFloat(eventFee),
+      paymentMode: registrationData.paymentMode,
+      accountNumber: registrationData.accountNumber,
+      transactionType: registrationData.transactionType,
+      paymentStatus: registrationData.paymentStatus,
+      createdBy: registrationData.createdBy,
+      userId: parseInt(userId)
+    };
 
+    try {
       await axios.post(API_ENDPOINTS.REG_FOR_EVENT, submissionData, {
-        headers: {
-          Authorization: token,
-          userId: userId
-        }
+        headers: { Authorization: token, userId }
       });
       alert('Registration successful');
     } catch (error) {
+      console.error('Submission error:', error);
       alert('Registration failed');
     }
   };
@@ -43,14 +49,6 @@ const EventRegistration = ({ eventId }) => {
       <Paper elevation={3} style={{ padding: '2rem', marginTop: '2rem' }}>
         <Typography variant="h4" gutterBottom>Event Registration</Typography>
         <form onSubmit={handleSubmit}>
-          <TextField
-            fullWidth
-            label="Amount"
-            margin="normal"
-            value={registrationData.amountPaid}
-            onChange={(e) => setRegistrationData({...registrationData, amountPaid: e.target.value})}
-          />
-          
           <FormControl fullWidth margin="normal">
             <InputLabel>Payment Mode</InputLabel>
             <Select
@@ -103,11 +101,11 @@ const EventRegistration = ({ eventId }) => {
             value={registrationData.createdBy}
             onChange={(e) => setRegistrationData({...registrationData, createdBy: e.target.value})}
           />
-          <Button 
-            variant="contained" 
-            color="primary" 
+          <Button
+            variant="contained"
+            color="primary"
             type="submit"
-            fullWidth 
+            fullWidth
             style={{ marginTop: '1rem' }}
           >
             Register

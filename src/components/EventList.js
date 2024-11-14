@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Container, Paper, Typography, TextField, Box, Card, CardContent, Button, Stack, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
@@ -7,6 +7,7 @@ import { MESSAGES } from '../constants/messages';
 import { buildUrlWithParams } from '../utils/queryUtils';
 import { useDebounce } from '../hooks/useDebounce';
 import { EventDialog } from './EventDialog';
+import EventRegistration from './EventRegistration';
 
 const EventList = () => {
   const [events, setEvents] = useState([]);
@@ -17,45 +18,48 @@ const EventList = () => {
     status: '' 
   });
   const [selectedEvent, setSelectedEvent] = useState(null);
+  const [showRegistration, setShowRegistration] = useState(false);
+  const [selectedEventForRegistration, setSelectedEventForRegistration] = useState(null);
   const isAdmin = localStorage.getItem('userId') === '1';
   const navigate = useNavigate();
   const debouncedFilters = useDebounce(filters, 500);
 
-  const fetchEvents = async () => {
-    try {
-      const params = new URLSearchParams();
-      Object.entries(filters).forEach(([key, value]) => {
-        if (value) {
-          if (key === 'searchKeyword') {
-            params.append('keyword', value);
-          } else if (key.includes('date')) {
-            params.append(key, value.replace(/-/g, ''));
-          } else if (key === 'status' && isAdmin) {
-            params.append('status', value);
-          }
+  // Wrap fetchEvents in useCallback to memoize it
+const fetchEvents = useCallback(async () => {
+  try {
+    const params = new URLSearchParams();
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value) {
+        if (key === 'searchKeyword') {
+          params.append('keyword', value);
+        } else if (key.includes('date')) {
+          params.append(key, value.replace(/-/g, ''));
+        } else if (key === 'status' && isAdmin) {
+          params.append('status', value);
         }
-      });
-
-      // For non-admin users, always fetch only active events
-      if (!isAdmin) {
-        params.append('status', 'active');
       }
+    });
 
-      const response = await axios.get(buildUrlWithParams(API_ENDPOINTS.VIEW_EVENTS, params), {
-        headers: {
-          'Authorization': localStorage.getItem('token'),
-          'userId': localStorage.getItem('userId')
-        }
-      });
-      setEvents(response.data);
-    } catch (error) {
-      console.error(MESSAGES.FETCH_ERROR, error);
+    if (!isAdmin) {
+      params.append('status', 'active');
     }
-  };
 
-  useEffect(() => {
-    fetchEvents();
-  }, [debouncedFilters]);
+    const response = await axios.get(buildUrlWithParams(API_ENDPOINTS.VIEW_EVENTS, params), {
+      headers: {
+        'Authorization': localStorage.getItem('token'),
+        'userId': localStorage.getItem('userId')
+      }
+    });
+    setEvents(response.data);
+  } catch (error) {
+    console.error(MESSAGES.FETCH_ERROR, error);
+  }
+}, [filters, isAdmin]);
+
+// Update useEffect to include fetchEvents in dependencies
+useEffect(() => {
+  fetchEvents();
+}, [debouncedFilters, fetchEvents]);
 
   const handleDelete = async (eventId) => {
     try {
@@ -129,16 +133,23 @@ const EventList = () => {
 
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3 }}>
           {events.map((event) => (
-            <Card 
-              key={event.eventId} 
-              onClick={() => setSelectedEvent(event)}
-              sx={{ 
+            <Card
+              key={event.eventId}
+              onClick={() => {
+                if (isAdmin) {
+                  setSelectedEvent(event);
+                } else {
+                  setSelectedEventForRegistration(event);
+                  setShowRegistration(true);
+                }
+              }}
+              sx={{
                 cursor: 'pointer',
                 '&:hover': { bgcolor: 'action.hover' },
                 ...(isAdmin && {
                   borderLeft: 6,
-                  borderColor: filters.status === 'active' ? 'success.main' : 
-                              filters.status === 'inactive' ? 'error.main' : 
+                  borderColor: filters.status === 'active' ? 'success.main' :
+                              filters.status === 'inactive' ? 'error.main' :
                               'grey.400'
                 })
               }}
@@ -147,17 +158,17 @@ const EventList = () => {
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <Typography variant="h6">{event.eventName}</Typography>
                   {isAdmin && (
-                    <Typography 
-                      variant="caption" 
-                      sx={{ 
-                        color: filters.status === 'active' ? 'success.main' : 
-                              filters.status === 'inactive' ? 'error.main' : 
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: filters.status === 'active' ? 'success.main' :
+                              filters.status === 'inactive' ? 'error.main' :
                               'text.secondary',
                         fontWeight: 'bold',
                         padding: '4px 8px',
                         borderRadius: '4px',
-                        backgroundColor: filters.status === 'active' ? 'success.light' : 
-                                       filters.status === 'inactive' ? 'error.light' : 
+                        backgroundColor: filters.status === 'active' ? 'success.light' :
+                                       filters.status === 'inactive' ? 'error.light' :
                                        'grey.100'
                       }}
                     >
@@ -166,9 +177,28 @@ const EventList = () => {
                   )}
                 </Box>
                 <Typography>Date: {event.eventDate}</Typography>
+                <Typography>Fee: ₹ {event.eventFee}</Typography>
               </CardContent>
             </Card>
-          ))}        </Box>        <EventDialog 
+          ))}
+        </Box>
+        {showRegistration && selectedEventForRegistration && (
+          <Paper elevation={3} sx={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '90%', maxWidth: 600, maxHeight: '90vh', overflow: 'auto', zIndex: 1000, p: 3 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+              <Button onClick={() => {
+                setShowRegistration(false);
+                setSelectedEventForRegistration(null);
+              }}>
+                Close
+              </Button>
+            </Box>
+            <EventRegistration 
+              eventId={selectedEventForRegistration.eventId} 
+              eventFee={selectedEventForRegistration.eventFee}
+            />
+          </Paper>
+        )}
+        <EventDialog 
           event={selectedEvent}
           isAdmin={isAdmin}
           onClose={() => setSelectedEvent(null)}
