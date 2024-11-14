@@ -12,7 +12,6 @@ const EventRegistration = ({ eventId, eventFee }) => {
     createdBy: ''
   });
 
-  // Validation moved after useState to prevent hooks error
   if (!eventId || !eventFee) {
     return <Typography>Missing required event information</Typography>;
   }
