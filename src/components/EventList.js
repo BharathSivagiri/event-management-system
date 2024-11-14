@@ -36,6 +36,11 @@ const EventList = () => {
         }
       });
 
+      // For non-admin users, always fetch only active events
+      if (!isAdmin) {
+        params.append('status', 'active');
+      }
+
       const response = await axios.get(buildUrlWithParams(API_ENDPOINTS.VIEW_EVENTS, params), {
         headers: {
           'Authorization': localStorage.getItem('token'),
@@ -127,17 +132,43 @@ const EventList = () => {
             <Card 
               key={event.eventId} 
               onClick={() => setSelectedEvent(event)}
-              sx={{ cursor: 'pointer', '&:hover': { bgcolor: 'action.hover' } }}
+              sx={{ 
+                cursor: 'pointer',
+                '&:hover': { bgcolor: 'action.hover' },
+                ...(isAdmin && {
+                  borderLeft: 6,
+                  borderColor: filters.status === 'active' ? 'success.main' : 
+                              filters.status === 'inactive' ? 'error.main' : 
+                              'grey.400'
+                })
+              }}
             >
               <CardContent>
-                <Typography variant="h6">{event.eventName}</Typography>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Typography variant="h6">{event.eventName}</Typography>
+                  {isAdmin && (
+                    <Typography 
+                      variant="caption" 
+                      sx={{ 
+                        color: filters.status === 'active' ? 'success.main' : 
+                              filters.status === 'inactive' ? 'error.main' : 
+                              'text.secondary',
+                        fontWeight: 'bold',
+                        padding: '4px 8px',
+                        borderRadius: '4px',
+                        backgroundColor: filters.status === 'active' ? 'success.light' : 
+                                       filters.status === 'inactive' ? 'error.light' : 
+                                       'grey.100'
+                      }}
+                    >
+                      {filters.status ? filters.status.toUpperCase() : 'ALL'}
+                    </Typography>
+                  )}
+                </Box>
                 <Typography>Date: {event.eventDate}</Typography>
               </CardContent>
             </Card>
-          ))}
-        </Box>
-
-        <EventDialog 
+          ))}        </Box>        <EventDialog 
           event={selectedEvent}
           isAdmin={isAdmin}
           onClose={() => setSelectedEvent(null)}
