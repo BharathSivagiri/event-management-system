@@ -67,10 +67,10 @@ const EventList = () => {
   };
 
   const handleCardClick = (event) => {
-    if (isAdmin) setSelectedEvent(event);
-    else {
+    setSelectedEvent(event);  // Show EventDialog for both admin and participants
+    if (!isAdmin) {
+      // For participants, EventDialog will have a Register button that triggers this
       setSelectedEventForRegistration(event);
-      setShowRegistration(true);
     }
   };
 
@@ -126,17 +126,47 @@ const EventList = () => {
             </Card>
           ))}
         </Box>
-
-        {showRegistration && selectedEventForRegistration && (
-          <Paper elevation={3} sx={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '90%', maxWidth: 600, maxHeight: '90vh', overflow: 'auto', zIndex: 1000, p: 3 }}>
+                {showRegistration && selectedEventForRegistration && (
+                  <Paper 
+                    elevation={3} 
+                    sx={{ 
+                      position: 'fixed', 
+                      top: '50%', 
+                      left: '50%', 
+                      transform: 'translate(-50%, -50%)', 
+                      width: '90%', 
+                      maxWidth: 600, 
+                      maxHeight: '90vh', 
+                      overflow: 'auto', 
+                      zIndex: 1000, 
+                      p: 3,
+                      animation: 'fadeIn 0.3s ease-in-out',
+                      '@keyframes fadeIn': {
+                        '0%': {
+                          opacity: 0,
+                          transform: 'translate(-50%, -48%)'
+                        },
+                        '100%': {
+                          opacity: 1,
+                          transform: 'translate(-50%, -50%)'
+                        }
+                      }
+                    }}>
             <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
               <Button onClick={closeRegistration}>Close</Button>
             </Box>
             <EventRegistration eventId={selectedEventForRegistration.eventId} eventFee={selectedEventForRegistration.eventFee} />
           </Paper>
-        )}
+              )}
         
-        <EventDialog event={selectedEvent} isAdmin={isAdmin} onClose={() => setSelectedEvent(null)} onDelete={handleDelete} />
+              <EventDialog 
+                event={selectedEvent} 
+                isAdmin={isAdmin} 
+                onClose={() => setSelectedEvent(null)} 
+                onDelete={handleDelete}
+                setShowRegistration={setShowRegistration}
+                setSelectedEventForRegistration={setSelectedEventForRegistration}
+              />
       </Paper>
     </Container>
   );

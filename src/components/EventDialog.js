@@ -1,20 +1,45 @@
 import React from 'react';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Typography, Box, IconButton, Button } from '@mui/material';
 import { Close, Delete, Edit } from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
 
-export const EventDialog = ({ event, isAdmin, onClose, onDelete }) => {
-  const navigate = useNavigate();
+export const EventDialog = ({ event, isAdmin, onClose, onDelete, setShowRegistration, setSelectedEventForRegistration  }) => {
   
   if (!event) return null;
 
   const handleRegisterClick = () => {
-    navigate(`/event-registration/${event.eventId}`);
     onClose();
+    setShowRegistration(true);
+    setSelectedEventForRegistration(event);
   };
-
+  
   return (
-    <Dialog open={!!event} onClose={onClose} maxWidth="sm" fullWidth>
+    <Dialog 
+      open={!!event} 
+      onClose={onClose} 
+      maxWidth="sm" 
+      fullWidth
+      TransitionProps={{
+        timeout: 300
+      }}
+      PaperProps={{
+        sx: {
+          transform: 'none',
+          transition: 'all 0.3s ease-in-out !important',
+          '&.MuiDialog-paper': {
+            opacity: 1,
+            transform: 'scale(1)',
+          },
+          '&.MuiDialog-paperEntering': {
+            opacity: 0,
+            transform: 'scale(0.95)',
+          },
+          '&.MuiDialog-paperExiting': {
+            opacity: 0,
+            transform: 'scale(1.05)',
+          }
+        }
+      }}
+    >
       <DialogTitle>
         <Box display="flex" justifyContent="space-between" alignItems="center">
           <Typography variant="h6">{event.eventName}</Typography>
