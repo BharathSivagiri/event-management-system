@@ -6,6 +6,7 @@ import CreateEvent from './components/CreateEvent';
 import EventRegistration from './components/EventRegistration';
 import NavigationBar from './components/NavigationBar';
 import Dashboard from './components/Dashboard';
+import MyRegistrations from './components/MyRegistrations';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -54,6 +55,7 @@ function App() {
             <Navigate to="/" />
           } 
         />
+        <Route path="/my-registrations" element={<MyRegistrations />} />
       </Routes>
     </Router>
   );

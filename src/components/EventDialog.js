@@ -48,6 +48,7 @@ export const EventDialog = ({ event, isAdmin, onClose, onDelete, setShowRegistra
       </DialogTitle>
       <DialogContent dividers>
         <Typography color="text.secondary">{event.eventDescription}</Typography>
+        <Typography >Event ID: {event.eventId}</Typography>
         <Typography >Location: {event.eventLocation}</Typography>
         <Typography >Date: {event.eventDate}</Typography>
         <Typography >Capacity: {event.eventCapacity}</Typography>

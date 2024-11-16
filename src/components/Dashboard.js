@@ -31,7 +31,7 @@ const Dashboard = () => {
     { icon: ManageSearch, title: 'Manage Events', desc: 'View, edit and delete events', path: '/events' }
   ] : [
     { icon: Event, title: 'Browse Events', desc: 'View and register for events', path: '/events' },
-    { icon: ListAlt, title: 'My Registrations', desc: 'View your event registrations', path: '/my-registrations' }
+    { icon: ListAlt, title: 'Cancel Event Registration', desc: 'Cancel event registrations', path: '/my-registrations' }
   ];
 
   return (
