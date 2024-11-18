@@ -1,11 +1,22 @@
 import React from 'react';
 import { Container, Grid, Card, CardContent, Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { AddCircleOutline, ManageSearch, Event, ListAlt } from '@mui/icons-material';
+import { AddCircleOutline, ManageSearch, Event, ListAlt, ListAltOutlined } from '@mui/icons-material';
+import { useAlert } from '../context/AlertContext';
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const isAdmin = localStorage.getItem('userId') === '1';
+  const { showAlert } = useAlert();
+  
+  const handleAction = () => {
+    try {
+      // Your action logic
+      showAlert('Operation successful!', 'success');
+    } catch (error) {
+      showAlert('Something went wrong!', 'error');
+    }
+  };
 
   const cardStyle = {
     height: '100%', 
@@ -28,7 +39,8 @@ const Dashboard = () => {
 
   const dashboardItems = isAdmin ? [
     { icon: AddCircleOutline, title: 'Create Event', desc: 'Add new events to the system', path: '/create-event' },
-    { icon: ManageSearch, title: 'Manage Events', desc: 'View, edit and delete events', path: '/events' }
+    { icon: ManageSearch, title: 'Manage Events', desc: 'View, edit and delete events', path: '/events' },
+    { icon: ListAltOutlined, title: 'View Registrations', desc: 'View all the registrations', path: '/admin/registrations' }
   ] : [
     { icon: Event, title: 'Browse Events', desc: 'View and register for events', path: '/events' },
     { icon: ListAlt, title: 'Cancel Event Registration', desc: 'Cancel event registrations', path: '/my-registrations' }

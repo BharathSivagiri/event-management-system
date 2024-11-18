@@ -3,11 +3,14 @@ import { TextField, Button, Container, Paper, Typography } from '@mui/material';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { API_ENDPOINTS } from '../constants/apiLinks';
+import { useAlert } from '../context/AlertContext';
+import { MESSAGES } from '../constants/messages';
 
 const Login = ({ setIsAuthenticated }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
+  const { showAlert } = useAlert();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -21,9 +24,10 @@ const Login = ({ setIsAuthenticated }) => {
       localStorage.setItem('token', data.token);
       localStorage.setItem('userId', data.userId);
       setIsAuthenticated(true);
+      showAlert(MESSAGES.LOGIN_SUCCESS, 'success');
       navigate('/dashboard');
-    } catch {
-      alert('Login failed');
+    } catch (error) {
+      showAlert(error.response?.data?.message || MESSAGES.LOGIN_ERROR, 'error');
     }
   };
 

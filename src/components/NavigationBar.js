@@ -1,9 +1,17 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AppBar, Toolbar, Typography, Button } from '@mui/material';
+import { useAlert } from '../context/AlertContext';
+import { MESSAGES } from '../constants/messages';
 
 const NavigationBar = ({ isAuthenticated, handleLogout }) => {
   const navigate = useNavigate();
+  const { showAlert } = useAlert();
+
+  const handleLogoutClick = () => {
+    handleLogout();
+    showAlert(MESSAGES.LOGOUT_SUCCESS, 'success');
+  };
   
   return (
     <AppBar position="static">
@@ -14,7 +22,7 @@ const NavigationBar = ({ isAuthenticated, handleLogout }) => {
         {isAuthenticated && (
           <>
             <Button color="inherit" onClick={() => navigate('/dashboard')}>Home</Button>
-            <Button color="inherit" onClick={handleLogout}>Logout</Button>
+            <Button color="inherit" onClick={handleLogoutClick}>Logout</Button>
           </>
         )}
       </Toolbar>

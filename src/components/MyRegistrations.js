@@ -54,7 +54,7 @@ const MyRegistrations = () => {
           const payload = {
             eventId: selectedRegistration.eventId,
             registrationId: selectedRegistration.Participants[0].registrationId,
-            amountPaid: paymentDetails.amountPaid, // Use the user-entered amount
+            amountPaid: paymentDetails.amountPaid, 
             userId,
             paymentMode: paymentDetails.paymentMode,
             accountNumber: paymentDetails.accountNumber,

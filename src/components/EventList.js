@@ -61,7 +61,7 @@ const EventList = () => {
 
   const handleFilterChange = (field, value) => setFilters(prev => ({ ...prev, [field]: value }));
 
-  const closeRegistration = () => {
+ const closeRegistration = () => {
     setShowRegistration(false);
     setSelectedEventForRegistration(null);
   };
@@ -164,6 +164,7 @@ const EventList = () => {
                 isAdmin={isAdmin} 
                 onClose={() => setSelectedEvent(null)} 
                 onDelete={handleDelete}
+                onEventUpdate={fetchEvents}
                 setShowRegistration={setShowRegistration}
                 setSelectedEventForRegistration={setSelectedEventForRegistration}
               />
