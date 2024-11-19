@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   Container,
   Typography,
@@ -10,40 +10,45 @@ import {
   TableHead,
   TableRow,
   Alert,
-  TablePagination
-} from '@mui/material';
-import axios from 'axios';
-import { API_ENDPOINTS } from '../constants/apiLinks';
+  TablePagination,
+} from "@mui/material";
+import axios from "axios";
+import { API_ENDPOINTS } from "../constants/apiLinks";
 
 const AdminRegistrations = () => {
-  const [registrations, setRegistrations] = useState([]);
-  const [error, setError] = useState('');
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
+  // State management for registrations data, error handling, and pagination
+  const [registrations, setRegistrations] = useState([]); // Stores all registration data
+  const [error, setError] = useState(""); // Handles error messages
+  const [page, setPage] = useState(0); // Current page number
+  const [rowsPerPage, setRowsPerPage] = useState(10); // Number of rows per page
 
-  const token = localStorage.getItem('token');
-  const userId = localStorage.getItem('userId');
+  // Get authentication details from localStorage
+  const token = localStorage.getItem("token");
+  const userId = localStorage.getItem("userId");
 
+  // Headers for API authentication
   const headers = {
-    'Authorization': `${token}`,
-    'userId': `${userId}`
+    Authorization: `${token}`,
+    userId: `${userId}`,
   };
 
+  // Fetch all registrations when component mounts
   useEffect(() => {
     const fetchAllRegistrations = async () => {
       try {
         const { data } = await axios.get(API_ENDPOINTS.VIEW_REGISTRATIONS, {
-          headers
+          headers,
         });
         setRegistrations(data);
       } catch (err) {
-        setError('Failed to fetch registrations');
+        setError("Failed to fetch registrations");
       }
     };
 
     fetchAllRegistrations();
   }, []);
 
+  // Pagination handlers
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
   };
@@ -53,25 +58,35 @@ const AdminRegistrations = () => {
     setPage(0);
   };
 
-  // Flattening the data for table display
-  const flattenedRegistrations = registrations.flatMap(event => 
-    event.Participants.length > 0 
-      ? event.Participants.map(participant => ({
+  // Transform nested registration data into flat structure for table display
+  const flattenedRegistrations = registrations.flatMap((event) =>
+    event.Participants.length > 0
+      ? event.Participants.map((participant) => ({
           eventName: event.eventName,
           eventId: event.eventId,
-          ...participant
+          ...participant,
         }))
       : []
   );
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4 }}>
-      <Typography variant="h4" gutterBottom>All Event Registrations</Typography>
+      {/* Page title */}
+      <Typography variant="h4" gutterBottom>
+        All Event Registrations
+      </Typography>
 
-      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+      {/* Error message display */}
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
+        </Alert>
+      )}
 
+      {/* Registration data table */}
       <TableContainer component={Paper}>
         <Table>
+          {/* Table header */}
           <TableHead>
             <TableRow>
               <TableCell>Event ID</TableCell>
@@ -81,6 +96,7 @@ const AdminRegistrations = () => {
               <TableCell>Registration ID</TableCell>
             </TableRow>
           </TableHead>
+          {/* Table body with pagination */}
           <TableBody>
             {flattenedRegistrations
               .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
@@ -92,9 +108,10 @@ const AdminRegistrations = () => {
                   <TableCell>{registration.username}</TableCell>
                   <TableCell>{registration.registrationId}</TableCell>
                 </TableRow>
-            ))}
+              ))}
           </TableBody>
         </Table>
+        {/* Pagination controls */}
         <TablePagination
           rowsPerPageOptions={[5, 10, 25]}
           component="div"
